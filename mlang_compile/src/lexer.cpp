@@ -71,21 +71,27 @@ Token Lexer::scanToken() {
             return createToken(TokenType::UNKNOWN, std::string(1, c));
         default:
             if (std::isalpha(c) || c == '_') return scanIdentifierOrKeyword();
-            if (std::isdigit(c)) return scanNumber();
+            if (std::isdigit(c)) {
+                Token numberToken = scanNumber();
+                if (std::isalpha(peek()) || peek() == '_') {
+                    // If the next character is a letter or underscore, it's an invalid identifier
+                    std::string invalidIdentifier = numberToken.value;
+                    while (std::isalnum(peek()) || peek() == '_') {
+                        invalidIdentifier += advance();
+                    }
+                    LexerError::invalidIdentifier("input", line, column - invalidIdentifier.length(), invalidIdentifier);
+                    return createToken(TokenType::UNKNOWN, invalidIdentifier);
+                }
+                return numberToken;
+            }
             LexerError::unexpectedCharacter("input", line, column - 1, c);
             return createToken(TokenType::UNKNOWN, std::string(1, c));
+
 
     }
 }
 
 Token Lexer::scanIdentifierOrKeyword() {
-    
-    if (std::isdigit(input[position - 1])) {
-        std::string value(1, input[position - 1]);
-        LexerError::invalidIdentifier("input", line, column - 1, value);
-        return createToken(TokenType::UNKNOWN, value);
-    }
-
     std::string value;
     value += input[position - 1];  
 
@@ -99,6 +105,7 @@ Token Lexer::scanIdentifierOrKeyword() {
 
     if (!std::isalpha(value[0]) && value[0] != '_') {
         LexerError::invalidIdentifier("input", line, column - value.length(), value);
+        return createToken(TokenType::UNKNOWN, value);
     }
 
     return createToken(TokenType::IDENTIFIER, value);
@@ -121,8 +128,14 @@ Token Lexer::scanNumber() {
         value += advance();
     }
 
+    // Check if the next character is a letter or underscore
+    if (std::isalpha(peek()) || peek() == '_') {
+        return createToken(TokenType::UNKNOWN, value);
+    }
+
     return createToken(TokenType::LITERAL, value);
 }
+
 
 Token Lexer::scanString() {
     std::string value;

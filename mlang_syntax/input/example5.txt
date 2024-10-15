@@ -1,0 +1,45 @@
+// This example code has a lexical error of declaring a variable which is an identifier, it is on the line 34
+// Define a type-safe function for Linear Regression training
+fn linear_regression_train(data: Dataset, labels: Vector<Float>, learning_rate: Float, epochs: Int) -> Vector<Float> {
+   // Initialize weights with zeros
+   weights: Vector<Float> = Vector::zeros(data.columns);
+
+   // Gradient Descent Algorithm
+   for epoch in 0 to no_epochs {
+       predictions = data * weights;  // Matrix multiplication
+       err = predictions - labels;
+       gradient = (1.0 / data.rows) * (data.transpose() * err);  // Gradient computation
+       weights = weights - learning_rate * gradient;
+   }
+
+   return weights;
+}
+
+// Define a function for prediction using trained weights
+fn predict(data: Vector<Float>, weights: Vector<Float>) -> Float {
+   return data * weights;  // Dot product of input data and weights
+}
+
+// Main function
+fn main() {
+   // Load dataset
+   input_data: Dataset = load_data("data.csv");  // Assume a CSV loader
+   labels: Vector<Float> = load_labels("labels.csv");
+
+   // Hyperparameters
+   learning_rate: Float = 0.01;  
+   epochs: Int = @;
+
+   // Train the model
+   weights: Vector<Float> = linear_regression_train(input_data, labels, learning_rate, epochs);
+   print("Trained weights: ", weights);
+
+   // Test the model with a new data point for prediction
+   new_data: Vector<Float> = [1.0, 2.0, 3.0];  // Example data point with 3 features
+   prediction: Float = predict(new_data, weights);
+
+   print("I am adding an error by purpose by not closing the quotes)
+
+   // Output the prediction
+   print("Prediction for new data point: ", prediction);
+}

@@ -1,3 +1,4 @@
+// This example code is a correct code according to our language and doesn't have any lexical errors
 // Define a type-safe function for Linear Regression training
 fn linear_regression_train(data: Dataset, labels: Vector<Float>, learning_rate: Float, epochs: Int) -> Vector<Float> {
    // Initialize weights with zeros

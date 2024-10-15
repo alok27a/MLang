@@ -1,3 +1,4 @@
+// This example code has a lexical error of declaring a variable which is an identifier, it is on the line 34
 // Define a type-safe function for Linear Regression training
 fn linear_regression_train(data: Dataset, labels: Vector<Float>, learning_rate: Float, epochs: Int) -> Vector<Float> {
    // Initialize weights with zeros
@@ -26,11 +27,11 @@ fn main() {
    labels: Vector<Float> = load_labels("labels.csv");
 
    // Hyperparameters
-   learning_rate: Float = 0..01;  // Error: Invalid number (double decimal point)
+   learning_rate: Float = 0.01;  
    epochs: Int = 1000;
 
    // Train the model
-   weights: Vector<Float> = linear_regression_train(input_data, labels, learning_rate, epochs);
+   123weights: Vector<Float> = linear_regression_train(input_data, labels, learning_rate, epochs);
    print("Trained weights: ", weights);
 
    // Test the model with a new data point for prediction
@@ -39,13 +40,4 @@ fn main() {
 
    // Output the prediction
    print("Prediction for new data point: ", prediction);
-
-   // Intentional errors
-   1invalid_identifier: Int = 10;  // Error: Invalid identifier (starts with a number)
-   unterminated_string = "This string is not properly closed;  // Error: Unterminated string
-   unknown_character = @;  // Error: Unknown character
-
-   // Multi-line comment not closed properly
-
-   print("This should not be executed");
 }

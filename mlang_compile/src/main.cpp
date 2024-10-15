@@ -3,24 +3,31 @@
 #include <sstream>
 #include "lexer.h"
 
-int main() {
-    std::string filename = "input.txt";
-    std::ifstream file(filename);
-    
-    if (!file.is_open()) {
-        std::cerr << "Error opening file: " << filename << std::endl;
+using namespace std;
+
+int main(int argc, char* argv[]) {
+    if (argc < 2) {
+        cerr << "Usage: " << argv[0] << " <input_filename>" << endl;
         return 1;
     }
 
-    std::stringstream buffer;
+    string filename = argv[1];
+    ifstream file(filename);
+
+    if (!file.is_open()) {
+        cerr << "Error opening file: " << filename << endl;
+        return 1;
+    }
+
+    stringstream buffer;
     buffer << file.rdbuf();
-    std::string input = buffer.str();
+    string input = buffer.str();
 
     Lexer lexer(input);
-    std::vector<Token> tokens = lexer.tokenize();
+    vector<Token> tokens = lexer.tokenize();
 
     for (const auto& token : tokens) {
-        std::cout << "<"<<tokenTypeToString(token.type) << ", \""<< token.value << "\"> [Line: " << token.line << ", Column: " << token.column << "]" << std::endl;
+        cout << "<" << tokenTypeToString(token.type) << ", \"" << token.value << "\"> [Line: " << token.line << ", Column: " << token.column << "]" << endl;
     }
 
     return 0;
