@@ -15,4 +15,4 @@ private:
     static std::string formatMessage(const std::string& message, const std::string& token);
 };
 
-#endif // ERRORS_H
+#endif 
