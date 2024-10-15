@@ -9,8 +9,8 @@ void LexerError::report(const std::string& filename, int line, int column, const
 std::string LexerError::formatMessage(const std::string& message, const std::string& token) {
     std::ostringstream oss;
     oss << message;
-    if (token.empty()) {
-        oss << "'" << token << "'";
+    if (!token.empty()) {
+        oss << " '" << token << "'";
     }
     return oss.str();
 }
