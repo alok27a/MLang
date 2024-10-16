@@ -4,7 +4,7 @@
 
 const std::unordered_set<std::string> Lexer::keywords = {
     "dataset", "fn", "for", "in", "return", "if", "else", "while",
-    "Int", "Float", "Vector", "Matrix","to","Dataset"
+    "Int", "Float", "Void","Vector", "Matrix","to","Dataset"
 };
 
 Lexer::Lexer(const std::string& input) : input(input), position(0), line(1), column(1) {}
