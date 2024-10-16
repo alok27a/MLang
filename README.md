@@ -210,4 +210,10 @@ The output is generated in the folder `mlang_syntax/output/output.txt`
 
 # Lexical Analysis Output Examples 
 
+### Running example 1 (Correct code)
+The example 1 doesn't has any kind of errors so, the output is displayed in the mlang_syntax/output/output.txt file 
 
+![image](https://github.com/user-attachments/assets/62d45423-7e89-4460-ad83-806660d9e87a)
+
+The output is of this format, where we mention the <TOKEN_TYPE, VALUE> [Line: line_number, Column: column_number]
+![image](https://github.com/user-attachments/assets/b890024a-8be2-4b70-a0f8-675aaf869035)

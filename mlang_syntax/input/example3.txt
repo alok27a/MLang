@@ -1,4 +1,4 @@
-// This example code has a lexical error of declaring a variable which is an identifier, it is on the line 34
+// This example code has a lexical error of declaring a variable which is different from the definition of identifier, it is on the line 34
 // Define a type-safe function for Linear Regression training
 fn linear_regression_train(data: Dataset, labels: Vector<Float>, learning_rate: Float, epochs: Int) -> Vector<Float> {
    // Initialize weights with zeros

@@ -1,4 +1,4 @@
-// This example code has a lexical error of declaring a variable which is an identifier, it is on the line 34
+// This example code has a lexical error of Unterminated string literal, it is on the line 44
 // Define a type-safe function for Linear Regression training
 fn linear_regression_train(data: Dataset, labels: Vector<Float>, learning_rate: Float, epochs: Int) -> Vector<Float> {
    // Initialize weights with zeros
@@ -38,7 +38,7 @@ fn main() {
    new_data: Vector<Float> = [1.0, 2.0, 3.0];  // Example data point with 3 features
    prediction: Float = predict(new_data, weights);
 
-   print("I am adding an error by purpose by not closing the quotes)
+   print("I am adding an error by purpose by not closing the quotes);
 
    // Output the prediction
    print("Prediction for new data point: ", prediction);
