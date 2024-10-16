@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include "lexer.h"
+#include "lexical-analysis/lexer/lexer.h"
 
 using namespace std;
 

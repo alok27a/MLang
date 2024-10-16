@@ -1,5 +1,5 @@
 #include "lexer.h"
-#include "errors.h"
+#include "../errors/errors.h"
 #include <cctype>
 
 const std::unordered_set<std::string> Lexer::keywords = {

@@ -13,7 +13,7 @@ input_file=$(realpath $1)
 cd mlang_compile/src
 
 # Compile the lexer and related files
-g++ main.cpp errors.cpp lexer.cpp -o mainprogram
+g++ main.cpp lexical-analysis/errors/errors.cpp lexical-analysis/lexer/lexer.cpp -o mainprogram
 
 # Check if the compilation succeeded
 if [ $? -eq 0 ]; then
