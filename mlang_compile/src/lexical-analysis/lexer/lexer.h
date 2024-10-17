@@ -34,7 +34,7 @@ private:
     int line;
     int column;
 
-    char peek();
+    char peekInput();
     char advance();
     bool isAtEnd();
     Token createToken(TokenType type, const std::string& value);

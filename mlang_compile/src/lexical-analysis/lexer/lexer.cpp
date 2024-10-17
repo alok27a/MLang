@@ -20,7 +20,7 @@ std::vector<Token> Lexer::tokenize() {
     return tokens;
 }
 
-char Lexer::peek() {
+char Lexer::peekInput() {
     if (isAtEnd()) return '\0';
     return input[position];
 }
@@ -46,7 +46,7 @@ Token Lexer::scanToken() {
         case ',': case ':': case ';': case '<': case '>':
             return createToken(TokenType::DELIMITER, std::string(1, c));
         case '.': 
-            if (peek() == '.') {
+            if (peekInput() == '.') {
                 advance();
                 return createToken(TokenType::OPERATOR, "..");
             }
@@ -54,13 +54,13 @@ Token Lexer::scanToken() {
         case '+': case '*': case '=':
             return createToken(TokenType::OPERATOR, std::string(1, c));
         case '-': 
-            if (peek() == '>') {
+            if (peekInput() == '>') {
                 advance();
                 return createToken(TokenType::OPERATOR, "->");
             }
             return createToken(TokenType::OPERATOR, "-");
         case '/': 
-            if (peek() == '/') {
+            if (peekInput() == '/') {
                 skipComment();
                 return createToken(TokenType::COMMENT, "");
             }
@@ -73,10 +73,10 @@ Token Lexer::scanToken() {
             if (std::isalpha(c) || c == '_') return scanIdentifierOrKeyword();
             if (std::isdigit(c)) {
                 Token numberToken = scanNumber();
-                if (std::isalpha(peek()) || peek() == '_') {
+                if (std::isalpha(peekInput()) || peekInput() == '_') {
                     // If the next character is a letter or underscore, it's an invalid identifier
                     std::string invalidIdentifier = numberToken.value;
-                    while (std::isalnum(peek()) || peek() == '_') {
+                    while (std::isalnum(peekInput()) || peekInput() == '_') {
                         invalidIdentifier += advance();
                     }
                     LexerError::invalidIdentifier("input", line, column - invalidIdentifier.length(), invalidIdentifier);
@@ -95,7 +95,7 @@ Token Lexer::scanIdentifierOrKeyword() {
     std::string value;
     value += input[position - 1];  
 
-    while (std::isalnum(peek()) || peek() == '_') {
+    while (std::isalnum(peekInput()) || peekInput() == '_') {
         value += advance();
     }
 
@@ -116,8 +116,8 @@ Token Lexer::scanNumber() {
     value += input[position - 1];
     bool hasDecimalPoint = false;
 
-    while (std::isdigit(peek()) || peek() == '.') {
-        if (peek() == '.') {
+    while (std::isdigit(peekInput()) || peekInput() == '.') {
+        if (peekInput() == '.') {
             if (hasDecimalPoint) {
                 value += advance();
                 LexerError::invalidNumber("input", line, column - value.length(), value);
@@ -129,7 +129,7 @@ Token Lexer::scanNumber() {
     }
 
     // Check if the next character is a letter or underscore
-    if (std::isalpha(peek()) || peek() == '_') {
+    if (std::isalpha(peekInput()) || peekInput() == '_') {
         return createToken(TokenType::UNKNOWN, value);
     }
 
@@ -142,8 +142,8 @@ Token Lexer::scanString() {
     int startLine = line;
     int startColumn = column - 1;
 
-    while (peek() != '"' && !isAtEnd()) {
-        if (peek() == '\n') {
+    while (peekInput() != '"' && !isAtEnd()) {
+        if (peekInput() == '\n') {
             line++;
             column = 1;
         }
@@ -162,7 +162,7 @@ Token Lexer::scanString() {
 
 void Lexer::skipWhitespace() {
     while (true) {
-        char c = peek();
+        char c = peekInput();
         switch (c) {
             case ' ': case '\r': case '\t':
                 advance();
@@ -179,7 +179,7 @@ void Lexer::skipWhitespace() {
 }
 
 void Lexer::skipComment() {
-    while (peek() != '\n' && !isAtEnd()) advance();
+    while (peekInput() != '\n' && !isAtEnd()) advance();
 }
 
 std::string tokenTypeToString(TokenType type) {
