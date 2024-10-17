@@ -25,6 +25,10 @@ if [ $? -eq 0 ]; then
     # Run the program and save the output to mlang_syntax/output/output.txt
     ./mainprogram "$input_file" > ../../mlang_syntax/output/output.txt
     echo "Execution completed. Output is saved to mlang_syntax/output/output.txt"
+
+    # Delete the mainprogram and .exe file after successful execution
+    rm -f mainprogram
+    echo "mainprogram and .exe file deleted."
 else
     echo "Compilation failed."
     exit 1
