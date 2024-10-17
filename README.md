@@ -98,10 +98,6 @@ Spaces, tabs, and newlines are ignored except as token separators
 10. The END_OF_FILE token is added at the end of the token stream
 
 
-# State Transitions
-
-
-
 # Lexical Errors
 
 The possible lexical errors that are handled are 
@@ -211,10 +207,62 @@ The output is generated in the folder `mlang_syntax/output/output.txt`
 # Lexical Analysis Output Examples 
 
 ### Running example 1 (Correct code)
-The example 1 doesn't has any kind of errors so, the output is displayed in the mlang_syntax/output/output.txt file 
+The example 1 doesn't has any kind of errors so,lexical analysis phase output is displayed in the mlang_syntax/output/output.txt file 
 
+Input: 
+Training dataset (data.csv), labels (labels.csv), learning_rate, epochs, and a new data point.
+
+Example - 
+dataset (data.csv)
+1.0, 2.0, 3.0
+4.0, 5.0, 6.0
+7.0, 8.0, 9.0
+
+labels (labels.csv)
+10.0
+20.0
+30.0
+
+
+Compiling: 
 ![image](https://github.com/user-attachments/assets/62d45423-7e89-4460-ad83-806660d9e87a)
 
+
+Lexical Output: 
 The output is of this format, where we mention the <TOKEN_TYPE, VALUE> [Line: line_number, Column: column_number]
 
 ![image](https://github.com/user-attachments/assets/b890024a-8be2-4b70-a0f8-675aaf869035)
+
+
+Ideal Program output: 
+Prediction for new data point: 11
+
+
+### Running example 2 (In-correct code)
+This example code has a lexical error of declaring a floating point number in a wrong way.
+
+The code can be found in mlang_syntax/input/example2
+
+Output: 
+It gives a lexical error
+![image](https://github.com/user-attachments/assets/675e0a28-e957-4133-a460-c0fe0a2d9f70)
+
+
+### Running example 3 (In-correct code)
+This example code has a lexical error of declaring a variable which is different from the definition of identifier
+
+Output: 
+It gives a lexical error. And output file remains empty
+![image](https://github.com/user-attachments/assets/98694d93-69b6-4dcd-9002-95e72781b559)
+
+
+### Running example 4 (In-correct code)
+This example code has a lexical error of Unterminated string literal
+
+![image](https://github.com/user-attachments/assets/ec671995-1c4c-4548-b7ba-e8a345353937)
+
+
+### Running example 5 (In-correct code)
+This example shows multiple lexical errors in a code. 
+
+![image](https://github.com/user-attachments/assets/ff80b735-2ee8-4f96-8340-4306d9535aca)
