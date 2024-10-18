@@ -38,7 +38,7 @@ fn main() {
    new_data: Vector<Float> = [1.0, 2.0, 3.0];  // Example data point with 3 features
    prediction: Float = predict(new_data, weights);
 
-   print("I am adding an error by purpose by not closing the quotes)
+   print("I am adding an error by purpose by not closing the quotes);
 
    // Output the prediction
    print("Prediction for new data point: ", prediction);

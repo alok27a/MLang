@@ -115,12 +115,18 @@ Token Lexer::scanNumber() {
     std::string value;
     value += input[position - 1];
     bool hasDecimalPoint = false;
+    int startColumn = column - 1;
 
     while (std::isdigit(peekInput()) || peekInput() == '.') {
         if (peekInput() == '.') {
             if (hasDecimalPoint) {
+                // Second decimal point found, consume the rest of the number
                 value += advance();
-                LexerError::invalidNumber("input", line, column - value.length(), value);
+                while (std::isdigit(peekInput())) {
+                    value += advance();
+                }
+                // Log the error
+                LexerError::invalidNumber("input", line, startColumn, value);
                 return createToken(TokenType::UNKNOWN, value);
             }
             hasDecimalPoint = true;
@@ -130,27 +136,24 @@ Token Lexer::scanNumber() {
 
     // Check if the next character is a letter or underscore
     if (std::isalpha(peekInput()) || peekInput() == '_') {
+        // Log the error for invalid identifier starting with a number
+        LexerError::invalidNumber("input", line, startColumn, value);
         return createToken(TokenType::UNKNOWN, value);
     }
 
     return createToken(TokenType::LITERAL, value);
 }
 
-
 Token Lexer::scanString() {
     std::string value;
     int startLine = line;
     int startColumn = column - 1;
 
-    while (peekInput() != '"' && !isAtEnd()) {
-        if (peekInput() == '\n') {
-            line++;
-            column = 1;
-        }
+    while (peekInput() != '"' && !isAtEnd() && peekInput() != '\n') {
         value += advance();
     }
 
-    if (isAtEnd()) {
+    if (isAtEnd() || peekInput() == '\n') {
         LexerError::unterminatedString("input", startLine, startColumn);
         return createToken(TokenType::UNKNOWN, value);
     }
@@ -158,8 +161,6 @@ Token Lexer::scanString() {
     advance();  // Consume the closing "
     return createToken(TokenType::LITERAL, value);
 }
-
-
 void Lexer::skipWhitespace() {
     while (true) {
         char c = peekInput();
