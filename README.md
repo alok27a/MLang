@@ -232,30 +232,21 @@ cd /path/to/your/project
 docker build -t lexer-image .
 ```
 This command will create a Docker image called lexer-image that contains all the necessary tools and files to compile and run the lexer.
+![image](https://github.com/user-attachments/assets/3d325f82-2bcd-41d4-8c92-a45e5e94f4e4)
+
 
 ### Running the Docker Container
 To run the Docker container with your lexer input file and output directory, use the following command:
 ```
-docker run --rm \
-    -v "/path/to/your/inputfile:/app/input.txt" \
-    -v "/path/to/your/outputdir:/app/mlang_syntax/output" \
-    lexer-image ./run_lexer.sh input.txt
-
+docker run -v /path/to/local/mlang_syntax:/MLANG/mlang_syntax lexer-image example1.txt
 ```
 Example command
 ```
-docker run --rm \
-    -v "/media/alok/New Volume2/Columbia/1st Year/Fall Semester/PLT/Programming-Assignment /MLang-Submission/MLang/mlang_syntax/input/example1.txt:/app/input.txt" \
-    -v "/media/alok/New Volume2/Columbia/1st Year/Fall Semester/PLT/Programming-Assignment /MLang-Submission/MLang/mlang_syntax/output:/app/mlang_syntax/output" \
-    lexer-image ./run_lexer.sh input.txt
+docker run -v "/media/alok/New Volume2/Columbia/1st Year/Fall Semester/PLT/Programming-Assignment /MLang-Submission/MLang/mlang_syntax:/MLANG/mlang_syntax" lexer-image example1.txt
 ```
+![image](https://github.com/user-attachments/assets/e368a714-5a0b-49ca-87e2-7afeb6d90a48)
 
-Explanation:
-- -v: This option mounts a volume (your local files) into the container.
-- The first -v mounts the input file (input.txt).
-- The second -v mounts the directory where the output will be saved (mlang_syntax/output).
-- ./run_lexer.sh: This runs the shell script inside the container.
-- input.txt: This is the file that the lexer will process.
+
 - Output
 After running the container, the lexer output will be saved to the specified output directory in a file called output.txt located in mlang_syntax/output/
 
