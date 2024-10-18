@@ -32,12 +32,12 @@ fn main() {
 
    // Train the model
    123weights: Vector<Float> = linear_regression_train(input_data, labels, learning_rate, epochs);
-   print("Trained weights: ", weights);
+   print(weights);
 
    // Test the model with a new data point for prediction
    new_data: Vector<Float> = [1.0, 2.0, 3.0];  // Example data point with 3 features
    prediction: Float = predict(new_data, weights);
 
    // Output the prediction
-   print("Prediction for new data point: ", prediction);
+   print(prediction);
 }

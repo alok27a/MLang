@@ -161,6 +161,7 @@ Token Lexer::scanString() {
     advance();  // Consume the closing "
     return createToken(TokenType::LITERAL, value);
 }
+
 void Lexer::skipWhitespace() {
     while (true) {
         char c = peekInput();

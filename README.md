@@ -204,6 +204,63 @@ There are 5 example text files given in ./mlang_syntax/input/ directory just sel
 The output is generated in the folder `mlang_syntax/output/output.txt` 
 
 
+# Docker Installation
+
+### Prerequisites
+- Make sure Docker is installed on your machine. If it’s not installed, follow the steps below to install it on Ubuntu:
+```
+sudo apt update
+sudo apt install docker.io -y
+sudo systemctl start docker
+sudo systemctl enable docker
+```
+
+- Verify that Docker is installed:
+```
+docker --version
+```
+### Building the Docker Image
+To build the Docker image for the lexer project, follow these steps:
+
+1) Navigate to the directory where the Dockerfile is located:
+```
+cd /path/to/your/project
+```
+
+2) Build the Docker image:
+```
+docker build -t lexer-image .
+```
+This command will create a Docker image called lexer-image that contains all the necessary tools and files to compile and run the lexer.
+
+### Running the Docker Container
+To run the Docker container with your lexer input file and output directory, use the following command:
+```
+docker run --rm \
+    -v "/path/to/your/inputfile:/app/input.txt" \
+    -v "/path/to/your/outputdir:/app/mlang_syntax/output" \
+    lexer-image ./run_lexer.sh input.txt
+
+```
+Example command
+```
+docker run --rm \
+    -v "/media/alok/New Volume2/Columbia/1st Year/Fall Semester/PLT/Programming-Assignment /MLang-Submission/MLang/mlang_syntax/input/example1.txt:/app/input.txt" \
+    -v "/media/alok/New Volume2/Columbia/1st Year/Fall Semester/PLT/Programming-Assignment /MLang-Submission/MLang/mlang_syntax/output:/app/mlang_syntax/output" \
+    lexer-image ./run_lexer.sh input.txt
+```
+
+Explanation:
+- -v: This option mounts a volume (your local files) into the container.
+- The first -v mounts the input file (input.txt).
+- The second -v mounts the directory where the output will be saved (mlang_syntax/output).
+- ./run_lexer.sh: This runs the shell script inside the container.
+- input.txt: This is the file that the lexer will process.
+- Output
+After running the container, the lexer output will be saved to the specified output directory in a file called output.txt located in mlang_syntax/output/
+
+
+
 # Lexical Analysis Output Examples 
 
 ### Running example 1 (Correct code)
