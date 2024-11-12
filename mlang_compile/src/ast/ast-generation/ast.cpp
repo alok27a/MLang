@@ -5,7 +5,6 @@
 #include <memory>
 #include <regex>
 
-
 // Token structure
 struct Token
 {
@@ -119,7 +118,6 @@ public:
         }
     }
 };
-
 
 // Represents a block of statements (function body, etc.)
 class BlockNode : public ASTNode
@@ -246,8 +244,359 @@ public:
     }
 };
 
+// Represents a range in a for loop
+class ForLoopNode : public ASTNode
+{
+public:
+    std::string loopVar;
+    std::string loopVarType;
+    std::unique_ptr<ASTNode> rangeStart;
+    std::unique_ptr<ASTNode> rangeEnd;
+    std::unique_ptr<ASTNode> body;
 
-int main() {
-    std::cout << "Hello, World!" << std::endl;
+    ForLoopNode(const std::string &loopVar, const std::string &loopVarType,
+                std::unique_ptr<ASTNode> rangeStart, std::unique_ptr<ASTNode> rangeEnd,
+                std::unique_ptr<ASTNode> body)
+        : loopVar(loopVar), loopVarType(loopVarType), rangeStart(std::move(rangeStart)),
+          rangeEnd(std::move(rangeEnd)), body(std::move(body)) {}
+
+    void print(int indentLevel = 0) const override
+    {
+        std::cout << std::string(indentLevel, ' ') << "FOR_LOOP\n";
+        std::cout << std::string(indentLevel + 2, ' ') << "LOOP_VARIABLE: " << loopVar << " (TYPE: " << loopVarType << ")\n";
+        std::cout << std::string(indentLevel + 2, ' ') << "RANGE_START: ";
+        rangeStart->print(0);
+        std::cout << std::string(indentLevel + 2, ' ') << "RANGE_END: ";
+        rangeEnd->print(0);
+        std::cout << std::string(indentLevel + 2, ' ') << "LOOP_BODY\n";
+        body->print(indentLevel + 4);
+    }
+};
+
+std::unique_ptr<ASTNode> parseExpression(const std::vector<Token> &tokens, size_t &index)
+{
+    // Ensure there are enough tokens to form an expression
+    if (index >= tokens.size())
+    {
+        std::cerr << "Error: Unexpected end of tokens while parsing expression." << std::endl;
+        return nullptr;
+    }
+
+    // Start parsing with the left operand (should be a literal for now)
+    std::unique_ptr<ASTNode> left = std::make_unique<LiteralNode>(tokens[index].value);
+    ++index;
+
+    while (index < tokens.size() && tokens[index].type == "OPERATOR")
+    {
+        std::string op = tokens[index].value;
+        ++index;
+
+        // Ensure the right operand exists
+        if (index >= tokens.size())
+        {
+            std::cerr << "Error: Operator found but no right operand." << std::endl;
+            return nullptr;
+        }
+
+        auto right = std::make_unique<LiteralNode>(tokens[index].value);
+        ++index;
+
+        // Create a binary operator node and update the left node
+        auto binaryOp = std::make_unique<BinaryOperatorNode>(op, std::move(left), std::move(right));
+        left = std::move(binaryOp);
+    }
+
+    return left;
+}
+
+class ReturnNode : public ASTNode
+{
+public:
+    std::unique_ptr<ASTNode> expression;
+
+    ReturnNode(std::unique_ptr<ASTNode> expr) : expression(std::move(expr)) {}
+
+    void print(int indentLevel = 0) const override
+    {
+        std::cout << std::string(indentLevel, ' ') << "RETURN_STATEMENT\n";
+        if (expression)
+        {
+            expression->print(indentLevel + 2);
+        }
+    }
+};
+
+class ParseException : public std::runtime_error
+{
+public:
+    ParseException(const std::string &message) : std::runtime_error(message) {}
+};
+
+std::unique_ptr<ProgramNode> parseTokens(const std::vector<Token> &tokens)
+{
+    auto program = std::make_unique<ProgramNode>();
+    size_t index = 0;
+
+    while (index < tokens.size())
+    {
+        const Token &token = tokens[index];
+        if (token.type == "KEYWORD" && token.value == "fn")
+        {
+            std::string functionName = tokens[++index].value;
+            ++index; // skip '('
+            std::vector<std::pair<std::string, std::string>> parameters;
+            ++index; // skip '('
+
+            while (index < tokens.size() && tokens[index].value != ")")
+            {
+                std::string paramName = tokens[index++].value;
+                std::string paramType;
+                if (index < tokens.size() && tokens[index].value == ":")
+                {
+                    ++index; // skip ':'
+                    int nestedAngleBrackets = 0;
+                    while (index < tokens.size())
+                    {
+                        if (tokens[index].value == "<")
+                        {
+                            nestedAngleBrackets++;
+                        }
+                        else if (tokens[index].value == ">")
+                        {
+                            nestedAngleBrackets--;
+                        }
+                        else if (tokens[index].value == "," && nestedAngleBrackets == 0)
+                        {
+                            break;
+                        }
+                        else if (tokens[index].value == ")" && nestedAngleBrackets == 0)
+                        {
+                            break;
+                        }
+                        paramType += tokens[index].value;
+                        ++index;
+                    }
+                }
+                parameters.emplace_back(paramName, paramType);
+                if (tokens[index].value == ",")
+                    ++index;
+            }
+            ++index; // skip ')'
+
+            // Parse return type, only if the next token is '->'
+            std::string returnType;
+            if (tokens[index].value == "->")
+            {
+                ++index; // skip '->'
+                int nestedAngleBrackets = 0;
+                while (index < tokens.size())
+                {
+                    if (tokens[index].value == "<")
+                    {
+                        nestedAngleBrackets++;
+                    }
+                    else if (tokens[index].value == ">")
+                    {
+                        nestedAngleBrackets--;
+                        if (nestedAngleBrackets == 0)
+                        {
+                            returnType += tokens[index].value;
+                            ++index;
+                            break;
+                        }
+                    }
+                    else if (tokens[index].value == "{" && nestedAngleBrackets == 0)
+                    {
+                        break;
+                    }
+                    returnType += tokens[index].value;
+                    ++index;
+                }
+            }
+
+            // Parse function body, starting with '{'
+            if (tokens[index].value == "{")
+                ++index; // skip '{'
+            auto body = std::make_unique<BlockNode>();
+            int braceCount = 1;
+
+            while (index < tokens.size())
+            {
+                const Token &currentToken = tokens[index];
+
+                if (currentToken.value == "{")
+                {
+                    ++braceCount;
+                }
+                else if (currentToken.value == "}")
+                {
+                    --braceCount;
+                    if (braceCount == 0)
+                    {
+                        ++index;
+                        break;
+                    }
+                }
+                else if (currentToken.type == "KEYWORD" && currentToken.value == "for")
+                {
+                    ++index; // Skip 'for'
+                    std::string loopVar = tokens[index].value;
+                    std::string loopVarType = "Int"; // Assume Int for simplicity
+                    ++index;                         // Move past the variable
+                    ++index;                         // Skip 'in'
+
+                    auto rangeStart = parseExpression(tokens, index);
+
+                    // Check for the "to" keyword
+                    if (index >= tokens.size() || tokens[index].value != "to")
+                    {
+                        throw ParseException("Expected 'to' after range start expression in 'for' loop at line " +
+                                             std::to_string(tokens[index].line) + ", column " +
+                                             std::to_string(tokens[index].column) + ".");
+                    }
+                    ++index; // Skip 'to'
+
+                    // Check if rangeEnd is present after 'to'
+                    if (index >= tokens.size())
+                    {
+                        throw ParseException("Expected range end expression in 'for' loop but found end of input at line " +
+                                             std::to_string(tokens[index - 1].line) + ", column " +
+                                             std::to_string(tokens[index - 1].column) + ".");
+                    }
+                    auto rangeEnd = parseExpression(tokens, index);
+                    if (!rangeEnd)
+                    {
+                        throw ParseException("Expected range end expression in 'for' loop but found '" + tokens[index].value +
+                                             "' at line " + std::to_string(tokens[index].line) + ", column " +
+                                             std::to_string(tokens[index].column) + ".");
+                    }
+
+                    auto loopBody = std::make_unique<BlockNode>();
+                    if (index < tokens.size() && tokens[index].value == "{")
+                    {
+                        ++index; // Skip '{'
+                        int bodyBraceCount = 1;
+                        while (index < tokens.size() && bodyBraceCount > 0)
+                        {
+                            if (tokens[index].value == "{")
+                            {
+                                ++bodyBraceCount;
+                            }
+                            else if (tokens[index].value == "}")
+                            {
+                                --bodyBraceCount;
+                                if (bodyBraceCount == 0)
+                                {
+                                    break;
+                                }
+                            }
+                            else if (tokens[index].type == "IDENTIFIER")
+                            {
+                                std::string varName = tokens[index].value;
+                                if (index + 1 < tokens.size() && tokens[index + 1].value == "=")
+                                {
+                                    index += 2; // Skip '='
+                                    auto expr = parseExpression(tokens, index);
+                                    loopBody->addStatement(std::make_unique<AssignmentNode>(varName, std::move(expr)));
+                                }
+                            }
+                            if (bodyBraceCount > 0)
+                                ++index;
+                        }
+                    }
+                    body->addStatement(std::make_unique<ForLoopNode>(loopVar, loopVarType, std::move(rangeStart), std::move(rangeEnd), std::move(loopBody)));
+                }
+                else if (currentToken.type == "KEYWORD" && currentToken.value == "return")
+                {
+                    ++index; // Skip 'return'
+
+                    // Attempt to parse an expression following the 'return' keyword
+                    auto expr = parseExpression(tokens, index);
+                    body->addStatement(std::make_unique<ReturnNode>(std::move(expr)));
+
+                    // Check for semicolon after the return statement
+                    if (index < tokens.size() && tokens[index].value == ";")
+                    {
+                        ++index; // Skip the semicolon
+                    }
+                    else
+                    {
+                        throw ParseException("Expected semicolon after return statement at line " +
+                                             std::to_string(tokens[index - 1].line) + ", column " +
+                                             std::to_string(tokens[index - 1].column) + ".");
+                    }
+                }
+
+                else
+                {
+                    ++index; // Move to next token
+                }
+            }
+
+            // Check for imbalance in braces
+            if (braceCount != 0)
+            {
+                throw ParseException("Mismatched braces detected in function body.");
+            }
+
+            program->addFunction(std::make_unique<FunctionNode>(functionName, parameters, returnType, std::move(body)));
+        }
+
+        else
+        {
+            ++index; // Move to next token if it's not a function
+        }
+    }
+
+    return program;
+}
+
+int main(int argc, char *argv[])
+{
+    // Check if both input and output filenames are provided as arguments
+    if (argc < 3)
+    {
+        std::cerr << "Usage: " << argv[0] << " <input_file> <output_file>" << std::endl;
+        return 1;
+    }
+
+    // Get the input and output filenames from command-line arguments
+    std::string inputFileName = argv[1];
+    std::string outputFileName = argv[2];
+
+    // Read tokens from the input file
+    std::vector<Token> tokens = readTokensFromFile(inputFileName);
+    if (tokens.empty())
+    {
+        std::cerr << "No tokens found in the input file." << std::endl;
+        return 1;
+    }
+
+    // Parse the tokens to create an AST
+    std::unique_ptr<ProgramNode> ast = parseTokens(tokens);
+
+    // Open the output file
+    std::ofstream outputFile(outputFileName);
+    if (!outputFile.is_open())
+    {
+        std::cerr << "Failed to open output file: " << outputFileName << std::endl;
+        return 1;
+    }
+
+    // Redirect cout to the file
+    std::streambuf *coutbuf = std::cout.rdbuf();
+    std::cout.rdbuf(outputFile.rdbuf());
+
+    // Print the AST to the file
+    ast->print();
+
+    // Restore cout to its original buffer
+    std::cout.rdbuf(coutbuf);
+
+    // Close the output file
+    outputFile.close();
+
+    std::cout << "AST output has been saved to " << outputFileName << std::endl;
+
     return 0;
 }
