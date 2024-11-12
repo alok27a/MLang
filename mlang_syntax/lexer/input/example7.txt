@@ -1,0 +1,16 @@
+fn summation(a: Float, b: Float) -> Float {
+   return a + b; 
+}
+
+fn subtraction(a: Float, b: Float) -> Float {
+   return a - b; 
+}
+
+fn multiplication(a: Float, b: Float) -> Float {
+   return a * b; 
+}
+
+fn division(a: Float, b: Float) -> Float {
+   return a / b; 
+}
+

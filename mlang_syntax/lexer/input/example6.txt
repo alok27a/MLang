@@ -1,0 +1,20 @@
+fn linear_regression_train(data: Dataset, labels: Vector<Float>, learning_rate: Float, epochs: Int) -> Vector<Float> {
+ 
+
+   // Gradient Descent Algorithm
+   for epoch in 0 to no_epochs {
+       predictions = data * weights;  // Matrix multiplication
+       err = predictions - labels;  
+       scaling_factor = 1.0 / data.rows;
+       error_product = data.transpose() * err;
+       gradient = scaling_factor * error_product;
+       weights = weights - learning_rate * gradient;
+   }
+
+}
+
+
+// Define a function for prediction using trained weights
+fn predict(data: Vector<Float>, weights: Vector<Float>) -> Float {
+   return data * weights;  // Dot product of input data and weights
+}

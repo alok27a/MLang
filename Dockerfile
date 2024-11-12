@@ -18,23 +18,48 @@ COPY . .
 
 # Compile the lexer and related files
 RUN cd mlang_compile/src && \
-    g++ main.cpp lexical-analysis/errors/errors.cpp lexical-analysis/lexer/lexer.cpp -o mainprogram
+    g++ main.cpp lexical-analysis/errors/errors.cpp lexical-analysis/lexer/lexer.cpp -o lexer_program
 
-# Create a wrapper script to run the program
+# Compile the AST generation program (assuming ast.cpp is located in 'ast' folder)
+RUN cd mlang_compile/src/ast/ast-generation && \
+    g++ ast.cpp -o ast_program
+
+# Create the lexer wrapper script
 RUN echo '#!/bin/bash\n\
-if [ $# -eq 0 ]; then\n\
-    echo "No input file specified. Usage: ./run_lexer.sh <input_filename>"\n\
+if [ $# -lt 1 ]; then\n\
+    echo "No input file specified. Usage: docker run <image_name> run_lexer.sh <input_file>"\n\
     exit 1\n\
 fi\n\
-input_file=$(realpath "/MLANG/mlang_syntax/input/$1")\n\
-cd /MLANG/mlang_compile/src\n\
-./mainprogram "$input_file" > /MLANG/mlang_syntax/output/output.txt\n\
-echo "Execution completed. Output is saved to mlang_syntax/output/output.txt"\n\
-rm -f mainprogram' > /MLANG/run_lexer.sh && \
+input_file=$1\n\
+if [ ! -f "$input_file" ]; then\n\
+    echo "Input file not found at $input_file"\n\
+    exit 1\n\
+fi\n\
+output_file=${2:-"/MLANG/mlang_syntax/lexer/output/lexer_output.txt"}\n\
+cd /MLANG/mlang_compile/src && \\\n\
+./lexer_program "$input_file" > "$output_file"\n\
+echo "Lexer output is saved to $output_file"\n' > /MLANG/run_lexer.sh && \
     chmod +x /MLANG/run_lexer.sh
 
-# Set the entrypoint to the wrapper script
-ENTRYPOINT ["/MLANG/run_lexer.sh"]
+# Create the AST generation wrapper script
+RUN echo '#!/bin/bash\n\
+if [ $# -lt 1 ]; then\n\
+    echo "No input file specified. Usage: docker run <image_name> run_ast.sh <input_file>"\n\
+    exit 1\n\
+fi\n\
+input_file=$1\n\
+if [ ! -f "$input_file" ]; then\n\
+    echo "Input file not found at $input_file"\n\
+    exit 1\n\
+fi\n\
+output_file=${2:-"/MLANG/mlang_syntax/ast/output/ast_output.txt"}\n\
+cd /MLANG/mlang_compile/src/ast/ast-generation && \\\n\
+./ast_program "$input_file" "$output_file"\n\
+echo "AST generation completed. Output saved to $output_file"\n' > /MLANG/run_ast.sh && \
+    chmod +x /MLANG/run_ast.sh
+
+# Set the entrypoint to /bin/bash to allow for interactive use
+ENTRYPOINT ["/bin/bash"]
 
 # Default command (can be overridden)
-CMD ["example1.txt"]
+CMD ["-c", "echo 'Docker image is ready for interactive use.'"]

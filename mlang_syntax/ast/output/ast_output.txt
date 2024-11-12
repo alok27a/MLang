@@ -1,0 +1,17 @@
+FUNCTION_DEFINITION
+  FUNCTION_NAME: main
+  RETURN_TYPE: 
+  PARAMETERS
+  FUNCTION_BODY
+    FOR_LOOP
+      LOOP_VARIABLE: i (TYPE: Int)
+      RANGE_START: LITERAL_VALUE: 1
+      RANGE_END: LITERAL_VALUE: 3
+      LOOP_BODY
+        FUNCTION_BODY
+          ASSIGNMENT_EXPRESSION
+            IDENTIFIER: nested_multip
+            EXPRESSION
+              OPERATOR: *
+                LITERAL_VALUE: i
+                LITERAL_VALUE: j
