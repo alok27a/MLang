@@ -149,6 +149,12 @@ This strategy allows for:
 
 
 # Parsing Phase 
+
+The YouTube video link is mentioned below 
+```
+https://youtu.be/9-EF7bUkQS0?si=hj5tcXQmlj7ZzWQT
+```
+
 The parser reads tokens from a lexer output file, constructs an Abstract Syntax Tree (AST), and outputs the AST structure.
 
 ### Grammar
