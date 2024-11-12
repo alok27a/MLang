@@ -148,6 +148,95 @@ This strategy allows for:
 
 
 
+# Parsing Phase 
+The parser reads tokens from a lexer output file, constructs an Abstract Syntax Tree (AST), and outputs the AST structure.
+
+### Grammar
+The language has the following non-terminal symbols:
+
+- Program: Represents the overall program structure which consists of a sequence of functions.
+- FunctionDefinition: Defines a function with a name, parameters, return type, and body.
+- Block: A sequence of statements, used to represent function bodies or loops.
+- Statement: Represents individual executable statements like assignments or return statements.
+- Expression: Represents expressions used in statements such as literals, variables, and operators.
+
+Terminology
+
+Non-Terminals: These are symbols that can be further expanded into other symbols according to the grammar rules. Examples: Program, FunctionDefinition, Block, Statement, Expression, etc.
+
+Terminals: These are the basic symbols that cannot be further expanded. They include literal values, keywords, operators, and identifiers. Examples: "fn", +, Number, String, Int, return, etc.
+
+
+### Error Handling Capabilities
+The parser implements error handling to deal with malformed input files. These error handling mechanisms ensure that the program reports useful error messages during token parsing and AST creation. The following error cases are handled:
+
+- Token Parsing Errors: If the tokenizer encounters an invalid line format in the input file, it reports an error indicating the line and column number.
+- Unexpected End of Tokens: If the parser reaches the end of the token stream unexpectedly, it throws an error, indicating the line and column where this occurred.
+- Unexpected Keywords or Operators: If an unexpected keyword or operator is found while parsing a function, block, or statement, the parser throws an error and stops further processing.
+- Mismatched Braces: If the parser encounters mismatched braces (i.e., a } is not properly closed or opened), it throws an error message indicating the mismatch.
+
+
+When an error is encountered, the parser throws a ParseException with a descriptive error message, including the line and column number where the error occurred. This helps in pinpointing the exact location of syntax errors in the source code.
+
+### Example Input
+
+Consider the below example as parsed lexemes for a code
+the code is written below
+```
+fn predict(data: Vector<Float>, weights: Vector<Float>) -> Float {
+   return data * weights;  // Dot product of input data and weights
+}
+
+```
+
+the associated lexemes are written below 
+```
+<KEYWORD, "fn"> [Line: 22, Column: 2]
+<IDENTIFIER, "predict"> [Line: 22, Column: 5]
+<DELIMITER, "("> [Line: 22, Column: 12]
+<IDENTIFIER, "data"> [Line: 22, Column: 13]
+<DELIMITER, ":"> [Line: 22, Column: 17]
+<KEYWORD, "Vector"> [Line: 22, Column: 19]
+<DELIMITER, "<"> [Line: 22, Column: 25]
+<KEYWORD, "Float"> [Line: 22, Column: 26]
+<DELIMITER, ">"> [Line: 22, Column: 31]
+<DELIMITER, ","> [Line: 22, Column: 32]
+<IDENTIFIER, "weights"> [Line: 22, Column: 34]
+<DELIMITER, ":"> [Line: 22, Column: 41]
+<KEYWORD, "Vector"> [Line: 22, Column: 43]
+<DELIMITER, "<"> [Line: 22, Column: 49]
+<KEYWORD, "Float"> [Line: 22, Column: 50]
+<DELIMITER, ">"> [Line: 22, Column: 55]
+<DELIMITER, ")"> [Line: 22, Column: 56]
+<OPERATOR, "->"> [Line: 22, Column: 58]
+<KEYWORD, "Float"> [Line: 22, Column: 61]
+<DELIMITER, "{"> [Line: 22, Column: 67]
+<KEYWORD, "return"> [Line: 23, Column: 5]
+<IDENTIFIER, "data"> [Line: 23, Column: 12]
+<OPERATOR, "*"> [Line: 23, Column: 17]
+<IDENTIFIER, "weights"> [Line: 23, Column: 19]
+<DELIMITER, ";"> [Line: 23, Column: 26]
+<COMMENT, ""> [Line: 23, Column: 69]
+<DELIMITER, "}"> [Line: 24, Column: 2]
+<END_OF_FILE, ""> [Line: 51, Column: 3]
+```
+
+the parse tree generated is below
+```
+FUNCTION_DEFINITION
+  FUNCTION_NAME: predict
+  RETURN_TYPE: Float
+  PARAMETERS
+    PARAMETER: data (TYPE: Vector<Float>)
+    PARAMETER: weights (TYPE: Vector<Float>)
+  FUNCTION_BODY
+    RETURN_STATEMENT
+      OPERATOR: *
+        LITERAL_VALUE: data
+        LITERAL_VALUE: weights
+```
+
+
 # Prerequisites for Installation 
 
 1. Installing Git
@@ -184,24 +273,25 @@ cd MLang
 3. Running the shell script
 This command is executed in the source root directory
 ```
-./run_lexer.sh <example_file.txt>
+./run_lexer_parsing.sh <example_file.txt>
 ```
 Example 
 ```
-./run_lexer.sh ./mlang_syntax/input/example1.txt
+./run_lexer_parsing.sh ./mlang_syntax/ast/input/lexer1.txt
 ```
 
 There are 5 example text files given in ./mlang_syntax/input/ directory just select any one of the files these are the commands for the same 
 ```
-./run_lexer.sh ./mlang_syntax/input/example1.txt
-./run_lexer.sh ./mlang_syntax/input/example2.txt
-./run_lexer.sh ./mlang_syntax/input/example3.txt
-./run_lexer.sh ./mlang_syntax/input/example4.txt
-./run_lexer.sh ./mlang_syntax/input/example5.txt
+./run_lexer_parsing.sh ./mlang_syntax/ast/input/lexer1.txt
+./run_lexer_parsing.sh ./mlang_syntax/ast/input/lexer2.txt
+./run_lexer_parsing.sh ./mlang_syntax/ast/input/lexer3.txt
+./run_lexer_parsing.sh ./mlang_syntax/ast/input/lexer4.txt
+./run_lexer_parsing.sh ./mlang_syntax/ast/input/lexer5.txt
 ```
 
 4. Generated Output 
-The output is generated in the folder `mlang_syntax/output/output.txt` 
+
+The output is generated in the folder `mlang_syntax/ast/output/ast_output.txt` 
 
 
 # Docker Installation
@@ -229,26 +319,42 @@ cd /path/to/your/project
 
 2) Build the Docker image:
 ```
-docker build -t lexer-image .
+docker build -t mlang .
 ```
 This command will create a Docker image called lexer-image that contains all the necessary tools and files to compile and run the lexer.
-![image](https://github.com/user-attachments/assets/3d325f82-2bcd-41d4-8c92-a45e5e94f4e4)
 
 
 ### Running the Docker Container
-To run the Docker container with your lexer input file and output directory, use the following command:
+
+(a) Running the Lexical Analyser 
+To run the Docker container with the input file as a code and grtting the lexer output, use the following command:
 ```
-docker run -v /path/to/local/mlang_syntax:/MLANG/mlang_syntax lexer-image example1.txt
+docker run -v /path/to/local/mlang_syntax:/MLANG/mlang_syntax run_lexer.sh /MLANG/input_files/example1.txt
 ```
 Example command
 ```
-docker run -v "/media/alok/New Volume2/Columbia/1st Year/Fall Semester/PLT/Programming-Assignment /MLang-Submission/MLang/mlang_syntax:/MLANG/mlang_syntax" lexer-image example1.txt
+docker run -v "/media/alok/New Volume2/Columbia/1st Year/Fall Semester/PLT/Programming-Assignment /MLang-Private/mlang_syntax/lexer/input:/MLANG/input_files" -v "/media/alok/New Volume2/Columbia/1st Year/Fall Semester/PL
+T/Programming-Assignment /MLang-Private/mlang_syntax/lexer/output:/MLANG/mlang_syntax/output" mlang run_lexer.sh /MLANG/input_files/example1.txt
 ```
-![image](https://github.com/user-attachments/assets/e368a714-5a0b-49ca-87e2-7afeb6d90a48)
-
 
 - Output
-After running the container, the lexer output will be saved to the specified output directory in a file called output.txt located in mlang_syntax/output/
+After running the container, the lexer output will be saved to the specified output directory in a file called lexer_output.txt located in mlang_syntax/lexer/output/lexer_output.txt
+
+
+(b) Running the AST Generation
+To run the parser with an example file which contains the output of lexer 
+```
+docker run -v /path/on/host/to/input/files:/MLANG/input_files mlang run_ast.sh /MLANG/input_files/lexer1.txt
+```
+
+Example command
+```
+docker run -v "/media/alok/New Volume2/Columbia/1st Year/Fall Semester/PLT/Programming-Assignment /MLang-Private/mlang_syntax/ast/input:/MLANG/input_files" -v "/media/alok/New Volume2/Columbia/1st Year/Fall Semester/PLT/Programming-Assignment /MLang-Private/mlang_syntax/ast/output:/MLANG/mlang_syntax/ast/output" mlang run_ast.sh /MLANG/input_files/lexer1.txt
+
+```
+
+- Output
+After running the container, the lexer output will be saved to the specified output directory in a file called output.txt located in mlang_syntax/ast/output/ast_output.txt
 
 
 
@@ -314,3 +420,18 @@ This example code has a lexical error of Unterminated string literal
 This example shows multiple lexical errors in a code. 
 
 ![image](https://github.com/user-attachments/assets/ff80b735-2ee8-4f96-8340-4306d9535aca)
+
+
+
+# Parsing Output Examples 
+
+### Running example 1
+
+### Running example 2
+
+### Running example 3
+
+
+### Running example 4
+
+### Running example 5
