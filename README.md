@@ -358,6 +358,7 @@ Example command
 docker run -v "/media/alok/New Volume2/Columbia/1st Year/Fall Semester/PLT/Programming-Assignment /MLang-Private/mlang_syntax/ast/input:/MLANG/input_files" -v "/media/alok/New Volume2/Columbia/1st Year/Fall Semester/PLT/Programming-Assignment /MLang-Private/mlang_syntax/ast/output:/MLANG/mlang_syntax/ast/output" mlang run_ast.sh /MLANG/input_files/lexer1.txt
 
 ```
+![image](https://github.com/user-attachments/assets/fe77de0a-f961-488d-a05d-a4e9028c849a)
 
 - Output
 After running the container, the lexer output will be saved to the specified output directory in a file called output.txt located in mlang_syntax/ast/output/ast_output.txt
@@ -431,13 +432,7 @@ This example shows multiple lexical errors in a code.
 
 # Parsing Output Examples 
 
-### Running example 1
+### Running lexer example files 
+![image](https://github.com/user-attachments/assets/fe77de0a-f961-488d-a05d-a4e9028c849a)
 
-### Running example 2
-
-### Running example 3
-
-
-### Running example 4
-
-### Running example 5
+![image](https://github.com/user-attachments/assets/d2eefd39-1a12-432f-99b9-e5d7e146451f)

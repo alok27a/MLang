@@ -1,17 +1,62 @@
 FUNCTION_DEFINITION
-  FUNCTION_NAME: main
-  RETURN_TYPE: 
+  FUNCTION_NAME: linear_regression_train
+  RETURN_TYPE: Vector<Float>
   PARAMETERS
+    PARAMETER: data (TYPE: Dataset)
+    PARAMETER: labels (TYPE: Vector<Float>)
+    PARAMETER: learning_rate (TYPE: Float)
+    PARAMETER: epochs (TYPE: Int)
   FUNCTION_BODY
     FOR_LOOP
-      LOOP_VARIABLE: i (TYPE: Int)
-      RANGE_START: LITERAL_VALUE: 1
-      RANGE_END: LITERAL_VALUE: 3
+      LOOP_VARIABLE: epoch (TYPE: Int)
+      RANGE_START: LITERAL_VALUE: 0
+      RANGE_END: LITERAL_VALUE: no_epochs
       LOOP_BODY
         FUNCTION_BODY
           ASSIGNMENT_EXPRESSION
-            IDENTIFIER: nested_multip
+            IDENTIFIER: predictions
             EXPRESSION
               OPERATOR: *
-                LITERAL_VALUE: i
-                LITERAL_VALUE: j
+                LITERAL_VALUE: data
+                LITERAL_VALUE: weights
+          ASSIGNMENT_EXPRESSION
+            IDENTIFIER: err
+            EXPRESSION
+              OPERATOR: -
+                LITERAL_VALUE: predictions
+                LITERAL_VALUE: labels
+          ASSIGNMENT_EXPRESSION
+            IDENTIFIER: scaling_factor
+            EXPRESSION
+              OPERATOR: /
+                LITERAL_VALUE: 1.0
+                LITERAL_VALUE: data
+          ASSIGNMENT_EXPRESSION
+            IDENTIFIER: error_product
+            EXPRESSION
+              LITERAL_VALUE: data
+          ASSIGNMENT_EXPRESSION
+            IDENTIFIER: gradient
+            EXPRESSION
+              OPERATOR: *
+                LITERAL_VALUE: scaling_factor
+                LITERAL_VALUE: error_product
+          ASSIGNMENT_EXPRESSION
+            IDENTIFIER: weights
+            EXPRESSION
+              OPERATOR: *
+                OPERATOR: -
+                  LITERAL_VALUE: weights
+                  LITERAL_VALUE: learning_rate
+                LITERAL_VALUE: gradient
+FUNCTION_DEFINITION
+  FUNCTION_NAME: predict
+  RETURN_TYPE: Float
+  PARAMETERS
+    PARAMETER: data (TYPE: Vector<Float>)
+    PARAMETER: weights (TYPE: Vector<Float>)
+  FUNCTION_BODY
+    RETURN_STATEMENT
+      OPERATOR: *
+        LITERAL_VALUE: data
+        LITERAL_VALUE: weights
