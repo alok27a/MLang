@@ -159,12 +159,52 @@ The parser reads tokens from a lexer output file, constructs an Abstract Syntax 
 
 ### Grammar
 The language has the following non-terminal symbols:
+```
+<Program> ::= <FunctionDefinition>*
 
-- Program: Represents the overall program structure which consists of a sequence of functions.
-- FunctionDefinition: Defines a function with a name, parameters, return type, and body.
-- Block: A sequence of statements, used to represent function bodies or loops.
-- Statement: Represents individual executable statements like assignments or return statements.
-- Expression: Represents expressions used in statements such as literals, variables, and operators.
+<FunctionDefinition> ::= "fn" <Identifier> "(" <ParameterList> ")" "->" <Type> "{" <Block> "}"
+
+<ParameterList> ::= <Parameter> ("," <Parameter>)* | ε
+<Parameter> ::= <Identifier> ":" <Type>
+
+<Type> ::= "Int" | "Float" | "String" | <ComplexType>
+<ComplexType> ::= <Type> "<" <Type> ">" // Example of template types, if needed
+
+<Block> ::= "{" <Statement>* "}"
+
+<Statement> ::= <VariableDeclaration> | <Assignment> | <FunctionCall> | <ForLoop> | <ReturnStatement>
+
+<VariableDeclaration> ::= <Type> <Identifier> ("=" <Expression>)? ";"
+<Assignment> ::= <Identifier> "=" <Expression> ";"
+<FunctionCall> ::= <Identifier> "(" <ArgumentList> ")" ";"
+<ArgumentList> ::= <Expression> ("," <Expression>)* | ε
+
+<ForLoop> ::= "for" <Identifier> "in" <Expression> "to" <Expression> <Block>
+<ReturnStatement> ::= "return" <Expression> ";"
+
+<Expression> ::= <Literal> | <Identifier> | <BinaryOperation>
+<BinaryOperation> ::= <Expression> <Operator> <Expression>
+<Operator> ::= "+" | "-" | "*" | "/" // Extendable for other operators
+
+<Literal> ::= <IntegerLiteral> | <FloatLiteral> | <StringLiteral>
+<IntegerLiteral> ::= [0-9]+
+<FloatLiteral> ::= [0-9]+"."[0-9]+
+<StringLiteral> ::= "\"" .* "\""
+
+<Identifier> ::= [a-zA-Z_][a-zA-Z0-9_]*
+```
+- Program: The overall structure of the program, which consists of multiple function definitions.
+- FunctionDefinition: Represents a function with a name, parameters, return type, and a body.
+- ParameterList: Defines the list of parameters for a function, separated by commas, or can be empty.
+- Type: The type system includes primitive types (Int, Float, String) and complex types for generics.
+- Block: Encloses a sequence of statements within {}.
+- Statement: The basic executable unit within the function, which can be variable declarations, assignments, function calls, loops, or returns.
+- VariableDeclaration: Declares a variable with an optional initializer.
+- Assignment: Assigns an expression to a variable.
+- FunctionCall: Calls a function with a specified list of arguments.
+- ForLoop: Represents a for loop that iterates over a range.
+- ReturnStatement: Returns an expression value from a function.
+- Expression: Represents expressions in the language, including literals, identifiers, and binary operations.
 
 Terminology
 
