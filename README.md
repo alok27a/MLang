@@ -158,7 +158,7 @@ https://youtu.be/9-EF7bUkQS0?si=hj5tcXQmlj7ZzWQT
 The parser reads tokens from a lexer output file, constructs an Abstract Syntax Tree (AST), and outputs the AST structure.
 
 ### Grammar
-The language has the following non-terminal symbols:
+The grammar of the language is defined as below:
 ```
 <Program> ::= <FunctionDefinition>*
 
