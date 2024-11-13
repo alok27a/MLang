@@ -160,51 +160,46 @@ The parser reads tokens from a lexer output file, constructs an Abstract Syntax 
 ### Grammar
 The grammar of the language is defined as below:
 ```
-<Program> ::= <FunctionDefinition>*
+<program> ::= <function-definition>*
+<function-definition> ::= "fn" <identifier> "(" <parameter-list> ")" <return-type>? <function-body>
+<parameter-list> ::= <parameter> ("," <parameter>)* | ε
+<parameter> ::= <identifier> ":" <type>
+<return-type> ::= "->" <type>
+<function-body> ::= "{" <statement>* "}"
+<statement> ::= <variable-declaration>
+               | <assignment>
+               | <for-loop>
+               | <return-statement>
+               | <function-call>
 
-<FunctionDefinition> ::= "fn" <Identifier> "(" <ParameterList> ")" "->" <Type> "{" <Block> "}"
+<variable-declaration> ::= <type> <identifier> ("=" <expression>)? ";"
+<assignment> ::= <identifier> "=" <expression> ";"
+<for-loop> ::= "for" <identifier> "in" <expression> "to" <expression> <block>
+<return-statement> ::= "return" <expression> ";"
+<function-call> ::= <identifier> "(" <argument-list> ")"
+<argument-list> ::= <expression> ("," <expression>)* | ε
+<block> ::= "{" <statement>* "}"
 
-<ParameterList> ::= <Parameter> ("," <Parameter>)* | ε
-<Parameter> ::= <Identifier> ":" <Type>
+<expression> ::= <literal>
+                | <identifier>
+                | <binary-expression>
+                | <function-call>
 
-<Type> ::= "Int" | "Float" | "String" | <ComplexType>
-<ComplexType> ::= <Type> "<" <Type> ">" // Example of template types, if needed
+<binary-expression> ::= <expression> <operator> <expression>
 
-<Block> ::= "{" <Statement>* "}"
-
-<Statement> ::= <VariableDeclaration> | <Assignment> | <FunctionCall> | <ForLoop> | <ReturnStatement>
-
-<VariableDeclaration> ::= <Type> <Identifier> ("=" <Expression>)? ";"
-<Assignment> ::= <Identifier> "=" <Expression> ";"
-<FunctionCall> ::= <Identifier> "(" <ArgumentList> ")" ";"
-<ArgumentList> ::= <Expression> ("," <Expression>)* | ε
-
-<ForLoop> ::= "for" <Identifier> "in" <Expression> "to" <Expression> <Block>
-<ReturnStatement> ::= "return" <Expression> ";"
-
-<Expression> ::= <Literal> | <Identifier> | <BinaryOperation>
-<BinaryOperation> ::= <Expression> <Operator> <Expression>
-<Operator> ::= "+" | "-" | "*" | "/" // Extendable for other operators
-
-<Literal> ::= <IntegerLiteral> | <FloatLiteral> | <StringLiteral>
-<IntegerLiteral> ::= [0-9]+
-<FloatLiteral> ::= [0-9]+"."[0-9]+
-<StringLiteral> ::= "\"" .* "\""
-
-<Identifier> ::= [a-zA-Z_][a-zA-Z0-9_]*
+<type> ::= <identifier> | <generic-type>
+<generic-type> ::= <identifier> "<" <type> ">"
+<operator> ::= "+" | "-" | "*" | "/" | "%" | "==" | "!=" | "<" | ">" | "<=" | ">="
+<literal> ::= <integer> | <string>
+<integer> ::= [0-9]+
+<string> ::= "\"" [^"]* "\""
+<identifier> ::= [a-zA-Z_][a-zA-Z0-9_]*
 ```
-- Program: The overall structure of the program, which consists of multiple function definitions.
-- FunctionDefinition: Represents a function with a name, parameters, return type, and a body.
-- ParameterList: Defines the list of parameters for a function, separated by commas, or can be empty.
-- Type: The type system includes primitive types (Int, Float, String) and complex types for generics.
-- Block: Encloses a sequence of statements within {}.
-- Statement: The basic executable unit within the function, which can be variable declarations, assignments, function calls, loops, or returns.
-- VariableDeclaration: Declares a variable with an optional initializer.
-- Assignment: Assigns an expression to a variable.
-- FunctionCall: Calls a function with a specified list of arguments.
-- ForLoop: Represents a for loop that iterates over a range.
-- ReturnStatement: Returns an expression value from a function.
-- Expression: Represents expressions in the language, including literals, identifiers, and binary operations.
+The production rules describe the structure and syntax of a program in this language. A program consists of zero or more function definitions. Each function definition begins with the keyword "fn," followed by an identifier representing the function name, parameters in parentheses, an optional return type, and the function body. Parameters are comma-separated, with each parameter defined by a name and a type. The return type, if specified, is indicated after an arrow "->". The function body, enclosed within curly braces, contains zero or more statements.
+
+Statements within a function body can be variable declarations, assignments, for loops, return statements, or function calls. Variable declarations consist of a type, an identifier, and an optional initialization. Assignments involve an identifier, an equals sign, and an expression. For loops include a loop variable, a range defined by two expressions, and a block of code to execute. Return statements contain the keyword "return" followed by an expression. Function calls consist of an identifier (function name) and arguments within parentheses.
+
+Expressions in this language can take the form of literals, identifiers, binary expressions, or function calls. Types may be simple identifiers or generic types with type parameters. The language supports various operators, including arithmetic, comparison, and assignment operators. Literals are restricted to integers or strings, and identifiers follow typical programming language naming conventions. This grammar provides a formal description of the syntax for parsing and validating programs written in this language, covering fundamental constructs like function definitions, loops, variable declarations, and expressions.
 
 Terminology
 
