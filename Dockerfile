@@ -1,65 +1,36 @@
-# Use an official Ubuntu base image
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
-# Set non-interactive mode for installing packages
+# Set environment variables to ensure non-interactive apt-get installation
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install necessary dependencies (build tools, g++)
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    g++ \
-    && apt-get clean
+# Install necessary packages (g++, make, git, bash, etc.)
+RUN apt-get update && \
+    apt-get install -y build-essential && \
+    apt-get clean
 
-# Set the working directory in the container
-WORKDIR /MLANG
+# Copy all the necessary files to the container (including your script and C++ source files)
+COPY . /app
 
-# Copy the entire project directory into the container
-COPY . .
+# Set the working directory
+WORKDIR /app
 
-# Compile the lexer and related files
-RUN cd mlang_compile/src && \
-    g++ main.cpp lexical-analysis/errors/errors.cpp lexical-analysis/lexer/lexer.cpp -o lexer_program
-
-# Compile the AST generation program (assuming ast.cpp is located in 'ast' folder)
-RUN cd mlang_compile/src/ast/ast-generation && \
-    g++ ast.cpp -o ast_program
-
-# Create the lexer wrapper script
+# Create a shell script to run the pipeline
 RUN echo '#!/bin/bash\n\
-if [ $# -lt 1 ]; then\n\
-    echo "No input file specified. Usage: docker run <image_name> run_lexer.sh <input_file>"\n\
-    exit 1\n\
-fi\n\
-input_file=$1\n\
-if [ ! -f "$input_file" ]; then\n\
-    echo "Input file not found at $input_file"\n\
-    exit 1\n\
-fi\n\
-output_file=${2:-"/MLANG/mlang_syntax/lexer/output/lexer_output.txt"}\n\
-cd /MLANG/mlang_compile/src && \\\n\
-./lexer_program "$input_file" > "$output_file"\n\
-echo "Lexer output is saved to $output_file"\n' > /MLANG/run_lexer.sh && \
-    chmod +x /MLANG/run_lexer.sh
+INPUT_FILE=${1:-default_input.txt}\n\
+g++ /app/mlang_compile/src/lexical-analysis/lexer/main.cpp \
+     /app/mlang_compile/src/lexical-analysis/errors/errors.cpp \
+     /app/mlang_compile/src/lexical-analysis/lexer/lexer.cpp -o /app/lexer_program\n\
+/app/lexer_program /app/input/${INPUT_FILE} > /app/mlang_syntax/code-generation/lexer-output/output.txt\n\
+echo "Compiling AST..."\n\
+g++ /app/mlang_compile/src/ast/ast-generation/ast.cpp -o /app/ast_program\n\
+/app/ast_program /app/mlang_syntax/code-generation/lexer-output/output.txt /app/mlang_syntax/code-generation/ast-output/output.txt\n\
+echo "Compiling Code-Generation..."\n\
+g++ /app/mlang_compile/src/code-generation/main.cpp -o /app/codegen_program\n\
+/app/codegen_program /app/mlang_syntax/code-generation/ast-output/output.txt /app/mlang_syntax/code-generation/final-output/final_python_output.txt\n\
+echo "Pipeline completed successfully. Final output is in /app/mlang_syntax/code-generation/final-output/final_python_output.txt"\n\
+echo "Contents of final_python_output.txt:"\n\
+cat /app/mlang_syntax/code-generation/final-output/final_python_output.txt\n\
+' > /app/run_pipeline.sh && chmod +x /app/run_pipeline.sh
 
-# Create the AST generation wrapper script
-RUN echo '#!/bin/bash\n\
-if [ $# -lt 1 ]; then\n\
-    echo "No input file specified. Usage: docker run <image_name> run_ast.sh <input_file>"\n\
-    exit 1\n\
-fi\n\
-input_file=$1\n\
-if [ ! -f "$input_file" ]; then\n\
-    echo "Input file not found at $input_file"\n\
-    exit 1\n\
-fi\n\
-output_file=${2:-"/MLANG/mlang_syntax/ast/output/ast_output.txt"}\n\
-cd /MLANG/mlang_compile/src/ast/ast-generation && \\\n\
-./ast_program "$input_file" "$output_file"\n\
-echo "AST generation completed. Output saved to $output_file"\n' > /MLANG/run_ast.sh && \
-    chmod +x /MLANG/run_ast.sh
-
-# Set the entrypoint to /bin/bash to allow for interactive use
-ENTRYPOINT ["/bin/bash"]
-
-# Default command (can be overridden)
-CMD ["-c", "echo 'Docker image is ready for interactive use.'"]
+# Set the entrypoint to the shell script
+ENTRYPOINT ["/app/run_pipeline.sh"]

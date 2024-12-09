@@ -1,0 +1,22 @@
+fn main() -> Int{
+   // Load dataset
+   input_data: Dataset = load_data("data.csv");  // Assume a CSV loader
+   labels: Vector<Float> = load_labels("labels.csv");
+
+   // Hyperparameters
+   learning_rate: Float = 0.01;  
+   epochs: Int = @;
+
+   // Train the model
+   weights: Vector<Float> = linear_regression_train(input_data, labels, learning_rate, epochs);
+   print(weights);
+
+   // Test the model with a new data point for prediction
+   new_data: Vector<Float> = [1.0, 2.0, 3.0];  // Example data point with 3 features
+   prediction: Float = predict(new_data, weights);
+
+   print("I am adding an error by purpose by not closing the quotes);
+
+   // Output the prediction
+   return prediction;
+}
