@@ -11,11 +11,8 @@ The team members for this project are as follows:
   
 
 | Name | UNI | Email ID |
-
 |----------------|--------|---------------------------|
-
 | Alok Mathur | am6499 | am6499@columbia.edu |
-
 | Aditi Chowdhuri | anc2207 | anc2207@columbia.edu |
 
   
@@ -52,23 +49,14 @@ As a proof of concept, the project will focus on implementing Linear Regression,
   
 
 |  **Token Type**  |  **Description**  |
-
 |  --------------  |  ---------------  |
-
 |  `KEYWORD`  | Reserved words of the language |
-
 |  `IDENTIFIER`  | Names for variables, functions, etc. |
-
 |  `LITERAL`  | Numeric and string constants |
-
 |  `OPERATOR`  | Symbols for operations |
-
 |  `DELIMITER`  | Punctuation marks for structuring code |
-
 |  `COMMENT`  | Single-line comments (not included in final token stream) |
-
 |  `UNKNOWN`  | Invalid or unrecognized tokens |
-
 |  `END_OF_FILE`  | Marks the end of input |
 
   
@@ -107,13 +95,9 @@ Int Float Void Vector Matrix to Dataset
   
 
 |  **Type**  |  **Format**  |  **Example**  |
-
 |  ----------  |  ------------------------------------------  |  -----------  |
-
 |  `Integer`  | Sequence of digits | 123 |
-
 |  `Float`  | Sequence of digits with a single decimal point | 123.45 |
-
   
 
 String literals
@@ -131,16 +115,12 @@ String literals
   
 
 |  **Type**  |  **Symbols**  |
-
 |  ----------------------------  |  ----------------------  |
-
 |  `Single-character operators`  |  `+ - * / = < >`  |
-
 |  `Multi-character operators`  |  `.. ->`  |
-
 |  `Delimiters`  |  `( ) { } [ ] , : ; .`  |
 
-  
+
   
 
 ### Comments
@@ -198,18 +178,13 @@ The possible lexical errors that are handled are
   
 
 |  **Error Type**  |  **Description**  |  **Example**  |
-
 |  -------------------------  |  -----------------------------------------------------  |  ------------------------------------  |
-
 |  `Unexpected Character`  | A character that doesn't belong to any valid token |  `@` or any other unrecognized symbol |
-
 |  `Unterminated String`  | A string literal without a closing double quote |  `"This string never ends`  |
-
 |  `Invalid Number`  | A numeric literal with incorrect format |  `123.45.67` (multiple decimal points)|
-
 |  `Invalid Identifier`  | An identifier that doesn't follow the rules |  `123abc` (starts with a digit) |
 
-  
+ 
   
 
 ### Error Reporting Format
@@ -400,7 +375,7 @@ cd /path/to/your/project
 
 ```
 
-docker build -t mlang-compiler .
+docker build -t mlang-compile .
 
 ```
 
