@@ -13,4 +13,3 @@ fn multiplication(a: Float, b: Float) -> Float {
 fn division(a: Float, b: Float) -> Float {
    return a / b; 
 }
-
