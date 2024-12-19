@@ -28,10 +28,55 @@ class ASTPythonGenerator
 {
 private:
     int indentLevel = 0;
-
     std::string getIndent()
     {
         return std::string(indentLevel * 4, ' ');
+    }
+
+    std::string simplifyExpression(const std::string &expr)
+    {
+        // Simple optimizations
+        if (expr == "0 + 0")
+            return "0";
+        if (expr == "a + 0" || expr == "0 + a")
+            return "a";
+        if (expr == "a * 1" || expr == "1 * a")
+            return "a";
+        if (expr == "a * 0" || expr == "0 * a")
+            return "0";
+
+        // Constant folding
+        std::istringstream iss(expr);
+        std::string token;
+        std::vector<std::string> tokens;
+
+        while (iss >> token)
+        {
+            tokens.push_back(token);
+        }
+
+        if (tokens.size() == 3 && (tokens[1] == "+" || tokens[1] == "-" || tokens[1] == "*" || tokens[1] == "/"))
+        {
+            try
+            {
+                int lhs = std::stoi(tokens[0]);
+                int rhs = std::stoi(tokens[2]);
+                if (tokens[1] == "+")
+                    return std::to_string(lhs + rhs);
+                if (tokens[1] == "-")
+                    return std::to_string(lhs - rhs);
+                if (tokens[1] == "*")
+                    return std::to_string(lhs * rhs);
+                if (tokens[1] == "/" && rhs != 0)
+                    return std::to_string(lhs / rhs);
+            }
+            catch (const std::exception &)
+            {
+                // Non-integer expressions are skipped
+            }
+        }
+
+        return expr; // Return the original if no optimization is applied
     }
 
 public:
@@ -44,7 +89,7 @@ public:
         if (node->type == "FUNCTION_DEFINITION")
         {
             python << generateFunctionDefinition(node);
-            indentLevel = 0; // Reset indent level after each function
+            indentLevel = 0;
         }
         else if (node->type == "FOR_LOOP")
         {
@@ -84,7 +129,6 @@ public:
             else if (child->type == "RETURN_TYPE")
             {
                 returnType = child->value;
-                // Convert return type to lowercase
                 std::transform(returnType.begin(), returnType.end(), returnType.begin(),
                                [](unsigned char c)
                                { return std::tolower(c); });
@@ -104,7 +148,6 @@ public:
                         {
                             paramType.pop_back();
                         }
-                        // Convert parameter type to lowercase
                         std::transform(paramType.begin(), paramType.end(), paramType.begin(),
                                        [](unsigned char c)
                                        { return std::tolower(c); });
@@ -135,104 +178,45 @@ public:
     {
         std::ostringstream python;
         std::string loopVar, rangeStart, rangeEnd;
-        std::cerr << "Generating Python code for FOR_LOOP\n";
 
-        // Add logging to inspect the AST structure
-        std::cerr << "Inspecting ASTNode children for FOR_LOOP\n";
         for (auto child : node->children)
         {
-            std::cerr << "Child type: " << child->type << " | Child value: " << child->value << "\n";
-
             if (child->type == "LOOP_VARIABLE")
             {
                 std::string fullVar = child->value;
                 size_t pos = fullVar.find(" (TYPE:");
                 loopVar = (pos != std::string::npos) ? fullVar.substr(0, pos) : fullVar;
-                std::cerr << "Found LOOP_VARIABLE: " << loopVar << "\n";
             }
             else if (child->type == "RANGE_START")
             {
-                // Check if RANGE_START is a literal value directly
-                if (child->value.find("LITERAL_VALUE") != std::string::npos)
-                {
-                    rangeStart = child->value.substr(child->value.find(":") + 1); // Extract value after "LITERAL_VALUE: "
-                    std::cerr << "RANGE_START LITERAL_VALUE: " << rangeStart << "\n";
-                }
-                else if (!child->children.empty())
-                {
-                    rangeStart = child->children[0]->value;
-                }
-                std::cerr << "Found RANGE_START: " << rangeStart << "\n";
+                rangeStart = child->value.find("LITERAL_VALUE") != std::string::npos ? child->value.substr(child->value.find(":") + 1) : (!child->children.empty() ? child->children[0]->value : "");
             }
             else if (child->type == "RANGE_END")
             {
-                // Check if RANGE_END is a literal value directly
-                if (child->value.find("LITERAL_VALUE") != std::string::npos)
-                {
-                    rangeEnd = child->value.substr(child->value.find(":") + 1); // Extract value after "LITERAL_VALUE: "
-                    std::cerr << "RANGE_END LITERAL_VALUE: " << rangeEnd << "\n";
-                }
-                else if (!child->children.empty())
-                {
-                    rangeEnd = child->children[0]->value;
-                }
-                std::cerr << "Found RANGE_END: " << rangeEnd << "\n";
+                rangeEnd = child->value.find("LITERAL_VALUE") != std::string::npos ? child->value.substr(child->value.find(":") + 1) : (!child->children.empty() ? child->children[0]->value : "");
             }
         }
 
-        // Add logging to check if loopVar, rangeStart, and rangeEnd are correctly set
-        std::cerr << "Loop variable: " << loopVar << "\n";
-        std::cerr << "Range start: " << rangeStart << "\n";
-        std::cerr << "Range end: " << rangeEnd << "\n";
-
         if (loopVar.empty() || rangeStart.empty() || rangeEnd.empty())
         {
-            std::cerr << "Error: Missing loop variable or range in FOR_LOOP\n";
             return "";
         }
 
         python << getIndent() << "for " << loopVar << " in range(" << rangeStart << ", " << rangeEnd << "):\n";
         indentLevel++;
 
-        bool foundLoopBody = false;
         for (auto child : node->children)
         {
             if (child->type == "LOOP_BODY")
             {
-                foundLoopBody = true;
-                std::cerr << "Found LOOP_BODY. It has " << child->children.size() << " children.\n";
                 for (auto loopBodyChild : child->children)
                 {
-                    std::cerr << "Processing LOOP_BODY child of type: " << loopBodyChild->type << "\n";
-                    if (loopBodyChild->type == "ASSIGNMENT_EXPRESSION")
-                    {
-                        std::cerr << "Found ASSIGNMENT_EXPRESSION\n";
-                        python << generateAssignment(loopBodyChild);
-                    }
-                    else if (loopBodyChild->type == "FUNCTION_BODY")
-                    {
-                        std::cerr << "Found FUNCTION_BODY in LOOP_BODY\n";
-                        for (auto funcChild : loopBodyChild->children)
-                        {
-                            python << generatePython(funcChild);
-                        }
-                    }
-                    else if (loopBodyChild->type == "FOR_LOOP")
-                    {
-                        std::cerr << "Found nested FOR_LOOP\n";
-                        python << generateForLoop(loopBodyChild);
-                    }
+                    python << generatePython(loopBodyChild);
                 }
             }
         }
 
-        if (!foundLoopBody)
-        {
-            std::cerr << "Error: No LOOP_BODY found in FOR_LOOP\n";
-        }
-
         indentLevel--;
-        // std::cerr << "Generated Python code for FOR_LOOP:\n" << python.str() << "\n";
         return python.str();
     }
 
@@ -241,7 +225,6 @@ public:
         std::ostringstream expression;
         if (node->type == "EXPRESSION")
         {
-            // If it's an EXPRESSION node, process its children
             for (auto child : node->children)
             {
                 expression << generateExpression(child);
@@ -253,20 +236,12 @@ public:
             {
                 std::string left = generateExpression(node->children[0]);
                 std::string right = generateExpression(node->children[1]);
-                expression << left << " " << node->value << " " << right;
-            }
-            else
-            {
-                std::cerr << "Error: OPERATOR node does not have 2 children.\n";
+                expression << simplifyExpression(left + " " + node->value + " " + right);
             }
         }
         else if (node->type == "LITERAL_VALUE" || node->type == "IDENTIFIER")
         {
             expression << node->value;
-        }
-        else
-        {
-            std::cerr << "Unhandled expression type: " << node->type << "\n";
         }
         return expression.str();
     }
@@ -274,40 +249,34 @@ public:
     std::string generateAssignment(ASTNode *node)
     {
         std::ostringstream python;
-        std::cerr << "Processing ASSIGNMENT_EXPRESSION\n";
         std::string variable;
         std::string value;
 
         for (auto child : node->children)
         {
-            std::cerr << "Child type: " << child->type << ", value: " << child->value << "\n";
             if (child->type == "IDENTIFIER")
             {
                 variable = child->value;
-                std::cerr << "Found IDENTIFIER: " << variable << "\n";
             }
             if (child->type == "EXPRESSION")
             {
                 value = generateExpression(child);
-                std::cerr << "Generated EXPRESSION: " << value << "\n";
             }
         }
 
         if (!variable.empty() && !value.empty())
         {
-            python << getIndent() << variable << " = " << value << "\n";
-        }
-        else
-        {
-            std::cerr << "Error: Missing variable or value in ASSIGNMENT_EXPRESSION\n";
+            python << getIndent() << variable << " = " << simplifyExpression(value) << "\n";
         }
 
         return python.str();
     }
+
     std::string generateReturnStatement(ASTNode *node)
     {
         std::ostringstream python;
-        python << getIndent() << "return " << generateExpression(node->children[0]) << "\n";
+        std::string expr = generateExpression(node->children[0]);
+        python << getIndent() << "return " << simplifyExpression(expr) << "\n";
         return python.str();
     }
 
@@ -321,34 +290,6 @@ public:
             result << vec[i];
         }
         return result.str();
-    }
-    std::string simplifyExpression(const std::string &expr)
-    {
-        if (expr == "0 + 0")
-            return "0";
-        if (expr == "a + 0" || expr == "0 + a")
-            return "a";
-        if (expr == "a * 1" || expr == "1 * a")
-            return "a";
-        if (expr == "a * 0" || expr == "0 * a")
-            return "0";
-        return expr; // return the original if no simplification is possible
-    }
-
-    // Function to perform basic simplification of expressions in statements
-    void simplifyStatements(std::vector<std::string> &statements)
-    {
-        for (auto &stmt : statements)
-        {
-            // If the statement is an assignment, simplify the expression
-            if (stmt.find("=") != std::string::npos)
-            {
-                size_t eqPos = stmt.find("=");
-                std::string left = stmt.substr(0, eqPos);
-                std::string right = stmt.substr(eqPos + 2);
-                stmt = left + " = " + simplifyExpression(right); // Simplify and reassign the statement
-            }
-        }
     }
 };
 
@@ -424,14 +365,12 @@ int main(int argc, char *argv[])
     std::string inputFile = argv[1];
     std::string outputFile = argv[2];
 
-    // Step 1: Parse the AST from the input file
     ASTNode *root = parseASTFromFile(inputFile);
     if (root == nullptr)
     {
         return 1;
     }
 
-    // Step 2: Generate Python code
     ASTPythonGenerator generator;
     std::string pythonCode;
 
@@ -440,11 +379,10 @@ int main(int argc, char *argv[])
         if (child->type == "FUNCTION_DEFINITION")
         {
             pythonCode += generator.generatePython(child);
-            pythonCode += "\n"; // Add a newline between functions
+            pythonCode += "\n";
         }
     }
 
-    // Step 3: Write the Python code to the output file
     std::ofstream outputFileStream(outputFile);
     if (!outputFileStream.is_open())
     {

@@ -1,0 +1,5 @@
+fn constatnt_prop(a: Int, b: Int) -> Int {
+    c: Int = 5;
+    d: Int = c + 3;
+    e: Int = d * 2
+}

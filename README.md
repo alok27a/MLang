@@ -397,8 +397,8 @@ docker run \ -v "$(pwd)/input:/app/input" \ -v "$(pwd)/output:/app/mlang_syntax/
 
 Example command
 ```bash
-docker run -v "/Users/alokmathur/Desktop/Code Test/mlang-private/mlang_syntax/code-generation/input-code:/app/input" \
--v "/Users/alokmathur/Desktop/Code Test/mlang-private/mlang_syntax/code-generation/output:/app/mlang_syntax/code-generation/final-output" \
+docker run -v "/Users/alokmathur/Desktop/Code Test/MLang/mlang_syntax/code-generation/input-code:/app/input" \
+-v "/Users/alokmathur/Desktop/Code Test/MLang/mlang_syntax/code-generation/output:/app/mlang_syntax/code-generation/final-output" \
 mlang-compile "example1.txt"
 ```
   Can change example1.txt to these 

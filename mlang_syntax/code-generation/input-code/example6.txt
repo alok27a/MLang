@@ -1,0 +1,11 @@
+fn summation(a: Float, b: Float) -> Float {
+   return a + 0; 
+}
+
+fn multiplication1(a: Float, b: Float) -> Float {
+   return b * 1; 
+}
+
+fn multiplication2(a: Float, b: Float) -> Float {
+   return a * 0; 
+}

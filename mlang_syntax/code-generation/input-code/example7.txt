@@ -1,0 +1,6 @@
+fn compute(a: Float, b: Float) -> Float {
+    c: Int = a+b;
+    d: Int = a*b;
+    e: Int = a/b;
+    return a + 0; 
+}

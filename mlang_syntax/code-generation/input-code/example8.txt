@@ -1,0 +1,3 @@
+fn peephole_optimization(a: Float, b: Float) -> Float {
+   return a * 0; 
+}
